@@ -12,10 +12,14 @@ fi
 sudo mkdir -p /home/ec2-user/nodes-on-aws
 sudo chown -R ec2-user:ec2-user /home/ec2-user/nodes-on-aws
 
-# Node.js 16.x 설치 (없는 경우)
+# Node.js 설치 (Amazon Linux 2 방식)
 if ! command -v node &> /dev/null; then
-    curl -sL https://rpm.nodesource.com/setup_16.x | sudo bash -
-    sudo yum install -y nodejs
+    # 사용 가능한 nodejs 버전 확인
+    sudo amazon-linux-extras list | grep nodejs
+    # nodejs 설치
+    sudo amazon-linux-extras enable nodejs
+    sudo yum clean metadata
+    sudo yum -y install nodejs
 fi
 
 # npm이 설치되어 있지 않은 경우 설치
