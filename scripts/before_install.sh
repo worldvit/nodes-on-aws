@@ -5,14 +5,22 @@ set -x
 
 echo "Starting before_install script..."
 
-# 현재 디렉토리 확인
-pwd
-ls -la
+# Node.js 설치 (Amazon Linux 2 기준)
+sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+. ~/.nvm/nvm.sh
+nvm install 16
+nvm use 16
+
+# npm 업데이트
+sudo npm install -g npm@latest
+
+# PM2 전역 설치
+sudo npm install -g pm2
 
 # 기존 디렉토리가 있다면 제거
 if [ -d /home/ec2-user/nodes-on-aws ]; then
     echo "Removing existing directory..."
-    rm -rf /home/ec2-user/nodes-on-aws || {
+    sudo rm -rf /home/ec2-user/nodes-on-aws || {
         echo "Failed to remove directory"
         exit 1
     }
@@ -20,23 +28,26 @@ fi
 
 # 새 디렉토리 생성
 echo "Creating new directory..."
-mkdir -p /home/ec2-user/nodes-on-aws || {
+sudo mkdir -p /home/ec2-user/nodes-on-aws || {
     echo "Failed to create directory"
     exit 1
 }
 
 # 권한 설정
 echo "Setting permissions..."
-chown -R ec2-user:ec2-user /home/ec2-user/nodes-on-aws || {
+sudo chown -R ec2-user:ec2-user /home/ec2-user/nodes-on-aws || {
     echo "Failed to set ownership"
     exit 1
 }
-chmod -R 755 /home/ec2-user/nodes-on-aws || {
+sudo chmod -R 755 /home/ec2-user/nodes-on-aws || {
     echo "Failed to set permissions"
     exit 1
 }
 
-echo "Directory permissions:"
-ls -la /home/ec2-user/nodes-on-aws
+# Node.js 버전 확인
+echo "Checking Node.js installation..."
+node -v
+npm -v
+pm2 -v
 
 echo "Before install script completed successfully"
