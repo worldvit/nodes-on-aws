@@ -1,20 +1,25 @@
 #!/usr/bin/env node
 
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 
+
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // 기본 라우트 추가
 app.get('/', (req, res) => {
   res.send('서버가 정상적으로 실행중입니다.');
 });
 
+
 // 임시 사용자 저장소
 const users = [];
+
 
 // 회원가입 페이지 렌더링
 app.get('/register', (req, res) => {
@@ -27,17 +32,18 @@ app.get('/register', (req, res) => {
   `);
 });
 
+
 // 회원가입 처리
 app.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+   
     users.push({
       username,
       password: hashedPassword
     });
-    
+   
     res.send('회원가입 성공!');
   } catch (error) {
     console.error('회원가입 에러:', error);
@@ -45,8 +51,10 @@ app.post('/register', async (req, res) => {
   }
 });
 
+
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
+
 
 // 에러 처리 추가
 app.listen(PORT, HOST, (err) => {
@@ -59,6 +67,7 @@ app.listen(PORT, HOST, (err) => {
   console.log(`- http://localhost:${PORT}/`);
   console.log(`- http://localhost:${PORT}/register`);
 });
+
 
 // 예기치 않은 에러 처리
 process.on('uncaughtException', (err) => {
