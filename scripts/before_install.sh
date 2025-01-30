@@ -3,14 +3,17 @@
 # 스크립트 실행 중 오류 발생시 즉시 중단
 set -e
 
-# 기존 애플리케이션 디렉토리가 있다면 제거
+# 기존 디렉토리가 있다면 제거
 if [ -d /home/ec2-user/nodes-on-aws ]; then
-    sudo rm -rf /home/ec2-user/nodes-on-aws
+    rm -rf /home/ec2-user/nodes-on-aws
 fi
 
-# 애플리케이션 디렉토리 생성 및 권한 설정
-sudo mkdir -p /home/ec2-user/nodes-on-aws
+# 새 디렉토리 생성
+mkdir -p /home/ec2-user/nodes-on-aws
+
+# 권한 설정
 sudo chown -R ec2-user:ec2-user /home/ec2-user/nodes-on-aws
+sudo chmod -R 755 /home/ec2-user/nodes-on-aws
 
 # Node.js 설치 (없는 경우)
 if ! command -v node &> /dev/null; then
