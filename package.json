@@ -9,10 +9,18 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "* 애플리케이션 생성\r aws deploy create-application --application-name nodes-on-aws --compute-platform Server",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "express": "^4.21.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/worldvit/nodes-on-aws.git"
+  },
+  "bugs": {
+    "url": "https://github.com/worldvit/nodes-on-aws/issues"
+  },
+  "homepage": "https://github.com/worldvit/nodes-on-aws#readme"
 }

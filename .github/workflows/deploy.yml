@@ -1,43 +1,39 @@
 name: Deploy to AWS
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
 
-    - name: Create CodeDeploy Application
-      run: |
-        # CodeDeploy 애플리케이션 생성 (없는 경우에만)
-        aws deploy get-application --application-name nodes-on-aws || \
-        aws deploy create-application --application-name nodes-on-aws
+      - name: Create S3 bucket if not exists
+        run: |
+          aws s3api head-bucket --bucket nodes-on-aws-deploy-us-west-2 2>/dev/null || \
+          aws s3 mb s3://nodes-on-aws-deploy-us-west-2 --region us-west-2
 
-    - name: Create CodeDeploy Deployment Group
-      run: |
-        # 배포 그룹 생성 (없는 경우에만)
-        aws deploy get-deployment-group \
-          --application-name nodes-on-aws \
-          --deployment-group-name nodes-on-aws-group || \
-        aws deploy create-deployment-group \
-          --application-name nodes-on-aws \
-          --deployment-group-name nodes-on-aws-group \
-          --service-role-arn ${{ secrets.AWS_CODEDEPLOY_ROLE_ARN }} \
-          --deployment-style deploymentType=IN_PLACE,deploymentOption=WITH_TRAFFIC_CONTROL \
-          --ec2-tag-set Key=Environment,Value=Production
+      - name: Create deployment package
+        run: |
+          zip -r deploy.zip . -x "*.git*"
 
-    - name: Create CodeDeploy Deployment
-      run: |
-        aws deploy create-deployment \
-          --application-name nodes-on-aws \
-          --deployment-group-name nodes-on-aws-group \
-          --github-location repository=${{ github.repository }},commitId=${{ github.sha }} 
+      - name: Upload to S3
+        run: |
+          aws s3 cp deploy.zip s3://nodes-on-aws-deploy-us-west-2/
+
+      - name: Create CodeDeploy Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name nodes-on-aws \
+            --deployment-group-name nodes-on-aws-group \
+            --s3-location bucket=nodes-on-aws-deploy-us-west-2,key=deploy.zip,bundleType=zip \
+            --region us-west-2 
