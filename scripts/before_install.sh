@@ -1,53 +1,46 @@
+
 #!/bin/bash
 
-# 디버깅을 위한 로그 활성화
-set -x
 
-echo "Starting before_install script..."
+# 스크립트 실행 중 오류 발생시 즉시 중단
+set -e
 
-# Node.js 설치 (Amazon Linux 2 기준)
-sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-. ~/.nvm/nvm.sh
-nvm install 16
-nvm use 16
 
-# npm 업데이트
-sudo npm install -g npm@latest
-
-# PM2 전역 설치
-sudo npm install -g pm2
-
-# 기존 디렉토리가 있다면 제거
+# 기존 애플리케이션 디렉토리가 있다면 제거
 if [ -d /home/ec2-user/nodes-on-aws ]; then
-    echo "Removing existing directory..."
-    sudo rm -rf /home/ec2-user/nodes-on-aws || {
-        echo "Failed to remove directory"
-        exit 1
-    }
+    sudo rm -rf /home/ec2-user/nodes-on-aws
 fi
 
-# 새 디렉토리 생성
-echo "Creating new directory..."
-sudo mkdir -p /home/ec2-user/nodes-on-aws || {
-    echo "Failed to create directory"
-    exit 1
-}
 
-# 권한 설정
-echo "Setting permissions..."
-sudo chown -R ec2-user:ec2-user /home/ec2-user/nodes-on-aws || {
-    echo "Failed to set ownership"
-    exit 1
-}
-sudo chmod -R 755 /home/ec2-user/nodes-on-aws || {
-    echo "Failed to set permissions"
-    exit 1
-}
+# 애플리케이션 디렉토리 생성 및 권한 설정
+sudo mkdir -p /home/ec2-user/nodes-on-aws
+sudo chown -R ec2-user:ec2-user /home/ec2-user/nodes-on-aws
 
-# Node.js 버전 확인
-echo "Checking Node.js installation..."
-node -v
-npm -v
-pm2 -v
 
-echo "Before install script completed successfully"
+# Node.js 설치 (없는 경우)
+if ! command -v node &> /dev/null; then
+    curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
+    sudo yum install -y nodejs
+fi
+
+
+# npm이 설치되어 있지 않은 경우 설치
+if ! command -v npm &> /dev/null; then
+    sudo yum install -y npm
+fi
+
+
+# PM2가 설치되어 있지 않은 경우 전역으로 설치
+if ! command -v pm2 &> /dev/null; then
+    sudo npm install -g pm2
+fi
+
+
+# 애플리케이션 디렉토리로 이동
+cd /home/ec2-user/nodes-on-aws
+
+
+# package.json이 있는 경우에만 npm install 실행
+if [ -f "package.json" ]; then
+    npm install
+fi
