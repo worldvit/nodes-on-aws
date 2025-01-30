@@ -3,13 +3,11 @@ on:
   push:
     branches: [ main ]
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -18,31 +16,18 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
 
-
-    - name: Create CodeDeploy Application
+    - name: Create deployment package
       run: |
-        # CodeDeploy 애플리케이션 생성 (없는 경우에만)
-        aws deploy get-application --application-name nodes-on-aws || \
-        aws deploy create-application --application-name nodes-on-aws
+        zip -r deploy.zip . -x "*.git*"
 
-
-    - name: Create CodeDeploy Deployment Group
+    - name: Upload to S3
       run: |
-        # 배포 그룹 생성 (없는 경우에만)
-        aws deploy get-deployment-group \
-          --application-name nodes-on-aws \
-          --deployment-group-name nodes-on-aws-group || \
-        aws deploy create-deployment-group \
-          --application-name nodes-on-aws \
-          --deployment-group-name nodes-on-aws-group \
-          --service-role-arn ${{ secrets.AWS_CODEDEPLOY_ROLE_ARN }} \
-          --deployment-style deploymentType=IN_PLACE,deploymentOption=WITH_TRAFFIC_CONTROL \
-          --ec2-tag-set Key=Environment,Value=Production
+        aws s3 cp deploy.zip s3://nodes-on-aws-deploy-us-west-2/
 
-
-    - name: Create CodeDeploy Deployment
+    - name: Deploy to AWS EC2
       run: |
         aws deploy create-deployment \
           --application-name nodes-on-aws \
           --deployment-group-name nodes-on-aws-group \
-          --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
+          --s3-location bucket=nodes-on-aws-deploy-us-west-2,key=deploy.zip,bundleType=zip \
+          --region us-west-2
