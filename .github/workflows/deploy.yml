@@ -16,6 +16,25 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
 
+    - name: Create CodeDeploy Application
+      run: |
+        # CodeDeploy 애플리케이션 생성 (없는 경우에만)
+        aws deploy get-application --application-name nodes-on-aws || \
+        aws deploy create-application --application-name nodes-on-aws
+
+    - name: Create CodeDeploy Deployment Group
+      run: |
+        # 배포 그룹 생성 (없는 경우에만)
+        aws deploy get-deployment-group \
+          --application-name nodes-on-aws \
+          --deployment-group-name nodes-on-aws-group || \
+        aws deploy create-deployment-group \
+          --application-name nodes-on-aws \
+          --deployment-group-name nodes-on-aws-group \
+          --service-role-arn ${{ secrets.AWS_CODEDEPLOY_ROLE_ARN }} \
+          --deployment-style deploymentType=IN_PLACE,deploymentOption=WITH_TRAFFIC_CONTROL \
+          --ec2-tag-set Key=Environment,Value=Production
+
     - name: Create CodeDeploy Deployment
       run: |
         aws deploy create-deployment \
