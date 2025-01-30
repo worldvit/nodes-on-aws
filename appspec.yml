@@ -2,11 +2,10 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user/nodes-on-aws/
+    destination: /home/ec2-user/nodes-on-aws
     overwrite: yes
-file_exists_behavior: OVERWRITE
 permissions:
-  - object: /home/ec2-user/nodes-on-aws/
+  - object: /home/ec2-user/nodes-on-aws
     pattern: "**"
     owner: ec2-user
     group: ec2-user
@@ -23,3 +22,7 @@ hooks:
     - location: scripts/after_install.sh
       timeout: 300
       runas: root
+  ApplicationStart:
+    - location: scripts/application_start.sh
+      timeout: 300
+      runas: ec2-user
