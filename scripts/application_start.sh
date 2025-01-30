@@ -13,11 +13,11 @@ if ! command -v node &> /dev/null; then
 fi
 
 # 의존성 패키지 설치
-npm install
+sudo npm install
 
 # 이전 PM2 프로세스 중지
-pm2 stop all || true
-pm2 delete all || true
+sudo pm2 stop all || true
+sudopm2 delete all || true
 
 # 실행 권한 확인 및 부여
 chmod +x src/app.js
@@ -27,11 +27,11 @@ export PORT=3000
 export NODE_ENV=production
 
 # PM2로 애플리케이션 시작
-pm2 start src/app.js --name "nodes-on-aws" -- --port 3000
+sudo pm2 start src/app.js --name "nodes-on-aws" -- --port 3000
 
 # PM2 startup 설정 및 저장
-pm2 startup
-pm2 save
+sudo pm2 startup
+sudo pm2 save
 
 # 실행 상태 확인
-pm2 list
+sudo pm2 list

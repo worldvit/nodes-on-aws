@@ -33,5 +33,5 @@ cd /home/ec2-user/nodes-on-aws
 
 # package.json이 있는 경우에만 npm install 실행
 if [ -f "package.json" ]; then
-    npm install
+    sudo npm install
 fi
