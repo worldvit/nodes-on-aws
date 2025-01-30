@@ -17,7 +17,7 @@ sudo npm install
 
 # 이전 PM2 프로세스 중지
 sudo pm2 stop all || true
-sudopm2 delete all || true
+sudo pm2 delete all || true
 
 # 실행 권한 확인 및 부여
 chmod +x src/app.js
