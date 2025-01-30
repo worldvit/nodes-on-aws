@@ -34,4 +34,4 @@ pm2 startup
 pm2 save
 
 # 실행 상태 확인
-pm2 list 
+pm2 list
